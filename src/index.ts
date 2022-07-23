@@ -88,7 +88,19 @@ bot.on('message', async (ctx) => {
   }
 });
 
-bot.launch();
+bot
+  .launch()
+  .catch((reason) => {
+    console.error('failed to launch', reason);
+    bot.stop(reason);
+  })
+  .then(() => {
+    console.log(
+      'Bot is up and running',
+      bot.botInfo,
+      `https://t.me/${bot.botInfo?.username}`
+    );
+  });
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
