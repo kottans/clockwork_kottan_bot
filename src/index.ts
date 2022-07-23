@@ -6,9 +6,13 @@ if (!process.env.BOT_TOKEN) {
   throw new Error('no BOT_TOKEN provided');
 }
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-const questions = Object.keys(faq);
+const { BOT_TOKEN, PORT = 3000, URL } = process.env;
 
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+bot.telegram.setWebhook(`${URL}/bot${process.env.BOT_TOKEN}`);
+
+const questions = Object.keys(faq);
 let currentQuestion = 0;
 let hasPassedCheck = false;
 
@@ -89,7 +93,13 @@ bot.on('message', async (ctx) => {
 });
 
 bot
-  .launch()
+  .launch({
+    webhook: {
+      hookPath: `/bot${process.env.BOT_TOKEN}`,
+      tlsOptions: null,
+      port: Number(PORT),
+    },
+  })
   .catch((reason) => {
     console.error('failed to launch', reason);
     bot.stop(reason);
