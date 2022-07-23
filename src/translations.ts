@@ -1,6 +1,14 @@
 export const lastQuestion = 'Ок, я все знаю! Впустите на курс!';
 export const letMeOut = 'Пустите! Меня! На курс!';
 
+export const botReplies = {
+  successCaptcha:
+    'Отлично! Будем считать, что проверка пройдена. Прослушаю ее я немного позже. Тебя наверное мучает самый главный вопрос?',
+  repeatCaptchaRequest:
+    'Отлично! Но я не смогу тебе доверять до того как ты отправишь голосовое сообщение. ;)',
+  proposeAnswers: 'Я готов повторить ответы. Хочешь?',
+};
+
 export const welcomeMessage = `
 Привет!
 
