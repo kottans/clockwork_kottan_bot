@@ -6,11 +6,17 @@ if (!process.env.BOT_TOKEN) {
   throw new Error('no BOT_TOKEN provided');
 }
 
-const { BOT_TOKEN, PORT = 3000, URL } = process.env;
+const {
+  BOT_TOKEN,
+  PORT = 3000,
+  URL = 'https://clockwork-kottan-bot.herokuapp.com/',
+} = process.env;
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const bot = new Telegraf(BOT_TOKEN);
 
-bot.telegram.setWebhook(`${URL}/bot${process.env.BOT_TOKEN}`);
+bot.telegram.setWebhook(`${URL}/bot${BOT_TOKEN}`);
+//@ts-expect-error we need to liestn port or heroku will kill the app
+bot.startWebhook(`/bot${BOT_TOKEN}`, null, Number(PORT));
 
 const questions = Object.keys(faq);
 let currentQuestion = 0;
@@ -93,13 +99,7 @@ bot.on('message', async (ctx) => {
 });
 
 bot
-  .launch({
-    webhook: {
-      hookPath: `/bot${process.env.BOT_TOKEN}`,
-      tlsOptions: null,
-      port: Number(PORT),
-    },
-  })
+  .launch()
   .catch((reason) => {
     console.error('failed to launch', reason);
     bot.stop(reason);
