@@ -12,7 +12,7 @@ const isTrustedGroup = (chatId: number) => {
   return Object.values(chatIds).includes(chatId);
 };
 
-const formDoneRecord = (ctx: Context): TaskDoneRecord => {
+const createDoneRecord = (ctx: Context): TaskDoneRecord => {
   if (!('message' in ctx.update) || !('text' in ctx.update.message)) return;
   const { from, chat, text, date } = ctx.update.message;
   const textBeforeDone: string = text.split('#done')[0];
@@ -32,7 +32,7 @@ const formDoneRecord = (ctx: Context): TaskDoneRecord => {
 export const handleDoneHashtag = (bot: Telegraf) => {
   bot.hashtag('done', (ctx) => {
     if (isTrustedGroup(ctx.message.chat.id)) {
-      const doneRecord = formDoneRecord(ctx);
+      const doneRecord = createDoneRecord(ctx);
       insertToSupabase(doneRecord);
     }
   });

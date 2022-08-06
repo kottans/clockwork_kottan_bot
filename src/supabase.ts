@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { TaskDoneRecord } from './global.types';
+import type { TaskDoneRecord } from './global.types';
 
 const { SUPABASE_URL, SUPABASE_KEY, SUPABASE_TABLE } = process.env;
 let supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);

@@ -1,6 +1,7 @@
+import 'dotenv/config';
 import { readFile } from 'fs/promises';
-import { trimDashSymbols } from '../helpers.js';
-import { insertToSupabase } from '../supabase.js';
+import { trimDashSymbols } from '../helpers';
+import { insertToSupabase } from '../supabase';
 
 async function main() {
   const file = await readFile(process.argv[2], 'utf-8');
