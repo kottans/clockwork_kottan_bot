@@ -15,8 +15,8 @@ const isTrustedGroup = (chatId: number) => {
 const createDoneRecord = (ctx: Context): TaskDoneRecord => {
   if (!('message' in ctx.update) || !('text' in ctx.update.message)) return;
   const { from, chat, text, date } = ctx.update.message;
-  const textBeforeDone: string = text.split('#done')[0];
-  const cleanTextBeforeDone: string = trimDashSymbols(textBeforeDone);
+  const textBeforeDone = text.split('#done')[0];
+  const cleanTextBeforeDone = trimDashSymbols(textBeforeDone);
 
   return {
     groupId: chat.id,
