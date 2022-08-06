@@ -1,30 +1,13 @@
 import 'dotenv/config';
-import { Telegraf } from 'telegraf';
-import { createFaqLoop, requestCaptcha } from './bot';
-import { welcomeMessage } from './translations';
+import { initBot } from './bot';
 
-if (!process.env.BOT_TOKEN) {
+const { BOT_TOKEN, DEVELOPMENT_MODE } = process.env;
+
+if (!BOT_TOKEN) {
   throw new Error('no BOT_TOKEN provided');
 }
 
-const {
-  BOT_TOKEN,
-  PORT = 3000,
-  URL = 'https://clockwork-kottan-bot.herokuapp.com/',
-} = process.env;
-
-const bot = new Telegraf(BOT_TOKEN);
-
-bot.telegram.setWebhook(`${URL}/bot${BOT_TOKEN}`);
-//@ts-expect-error we need to listen port or heroku will kill the app
-bot.startWebhook(`/bot${BOT_TOKEN}`, null, Number(PORT));
-
-bot.start((ctx) => {
-  ctx.reply(welcomeMessage);
-});
-
-requestCaptcha(bot);
-createFaqLoop(bot);
+const bot = initBot();
 
 bot
   .launch()
@@ -34,7 +17,7 @@ bot
   })
   .then(() => {
     console.log(
-      'Bot is up and running',
+      `${DEVELOPMENT_MODE ? 'Dev' : ''} Bot is up and running`,
       bot.botInfo,
       `https://t.me/${bot.botInfo?.username}`
     );

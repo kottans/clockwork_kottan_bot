@@ -1,16 +1,15 @@
 import { Telegraf } from 'telegraf';
 import {
-  keyboard,
+  botReplies,
   faq,
+  keyboard,
+  lastMessage,
   lastQuestion,
   letMeOut,
-  lastMessage,
-  botReplies,
 } from './translations';
 
 const questions = Object.keys(faq);
 let currentQuestion = 0;
-let hasPassedCheck = false;
 
 const getReplyKeyboard = (keyboardSource: Array<Array<string>> | string) => {
   const keyboard =
@@ -24,8 +23,15 @@ const getReplyKeyboard = (keyboardSource: Array<Array<string>> | string) => {
   };
 };
 
-export const createFaqLoop = (bot: Telegraf) => {
+const createFaqLoop = (bot: Telegraf) => {
   bot.hears(questions, (ctx) => {
+    ctx.reply(
+      JSON.stringify({
+        isLast: questions[currentQuestion],
+        answer: faq[ctx.message.text],
+      })
+    );
+
     if (!questions[currentQuestion]) {
       ctx.reply(faq[ctx.message.text]);
       return;
@@ -54,22 +60,41 @@ export const createFaqLoop = (bot: Telegraf) => {
   });
 };
 
-export const requestCaptcha = (bot: Telegraf) => {
-  bot.on('message', async (ctx) => {
-    //@ts-expect-error bad types
-    const { voice } = ctx.message;
+const requestCaptcha = (bot: Telegraf) => {
+  let hasPassedCheck = false;
 
-    if (voice && !hasPassedCheck) {
-      ctx.reply(
-        botReplies.successCaptcha,
-        getReplyKeyboard(questions[currentQuestion])
-      );
+  return new Promise((resolve) => {
+    bot.on('message', async (ctx) => {
+      //@ts-expect-error bad types
+      const { voice, chat } = ctx.message;
 
-      hasPassedCheck = true;
-    }
+      if (chat.type !== 'private') {
+        return;
+      }
 
-    if (!voice && !hasPassedCheck) {
-      ctx.reply(botReplies.repeatCaptchaRequest);
-    }
+      if (voice && !hasPassedCheck) {
+        ctx.reply(
+          botReplies.successCaptcha,
+          getReplyKeyboard(questions[currentQuestion])
+        );
+
+        hasPassedCheck = true;
+
+        createFaqLoop(bot);
+        resolve(hasPassedCheck);
+      }
+
+      if (!voice && !hasPassedCheck) {
+        ctx.reply(botReplies.repeatCaptchaRequest);
+      }
+    });
   });
+};
+
+export const handlePrivateChat = async (bot: Telegraf) => {
+  const hasPassedCaptcha = await requestCaptcha(bot);
+
+  if (hasPassedCaptcha) {
+    createFaqLoop(bot);
+  }
 };
