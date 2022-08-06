@@ -25,13 +25,6 @@ const getReplyKeyboard = (keyboardSource: Array<Array<string>> | string) => {
 
 const createFaqLoop = (bot: Telegraf) => {
   bot.hears(questions, (ctx) => {
-    ctx.reply(
-      JSON.stringify({
-        isLast: questions[currentQuestion],
-        answer: faq[ctx.message.text],
-      })
-    );
-
     if (!questions[currentQuestion]) {
       ctx.reply(faq[ctx.message.text]);
       return;
@@ -64,15 +57,14 @@ const requestCaptcha = (bot: Telegraf) => {
   let hasPassedCheck = false;
 
   return new Promise((resolve) => {
-    bot.on('message', async (ctx) => {
-      //@ts-expect-error bad types
-      const { voice, chat } = ctx.message;
+    bot.on('voice', async (ctx) => {
+      const { chat } = ctx.message;
 
       if (chat.type !== 'private') {
         return;
       }
 
-      if (voice && !hasPassedCheck) {
+      if (!hasPassedCheck) {
         ctx.reply(
           botReplies.successCaptcha,
           getReplyKeyboard(questions[currentQuestion])
@@ -80,12 +72,7 @@ const requestCaptcha = (bot: Telegraf) => {
 
         hasPassedCheck = true;
 
-        createFaqLoop(bot);
         resolve(hasPassedCheck);
-      }
-
-      if (!voice && !hasPassedCheck) {
-        ctx.reply(botReplies.repeatCaptchaRequest);
       }
     });
   });
