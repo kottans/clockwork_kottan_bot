@@ -13,7 +13,9 @@ const isTrustedGroup = (chatId: number) => {
 };
 
 const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
-  if (!('message' in ctx.update) || !('text' in ctx.update.message)) return;
+  if (!('message' in ctx.update) || !('text' in ctx.update.message)) {
+    return;
+  }
   const { from, chat, text, date } = ctx.update.message;
   const textsBeforeDone = getTextsBeforeDones(text);
 
@@ -30,8 +32,7 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
 
 export const handleDoneHashtag = (bot: Telegraf) => {
   bot.hashtag('done', (ctx) => {
-    console.log(ctx.message);
-    if (true || isTrustedGroup(ctx.message.chat.id)) {
+    if (isTrustedGroup(ctx.message.chat.id)) {
       const doneRecord = createDoneRecords(ctx);
       insertToSupabase(doneRecord);
     }

@@ -11,7 +11,7 @@ interface TgJsonExport {
       date_unixtime: string;
       from?: string;
       from_id?: string;
-      text: '' | ['' | { type: string; text: string }];
+      text: string | Array<string | { type: string; text: string }>;
     }
   ];
 }
@@ -21,22 +21,18 @@ async function main() {
   const json: TgJsonExport = JSON.parse(file);
 
   const doneRawMessages = json.messages.map((message) => {
-    if (!(message.text instanceof Array)) {
+    if (typeof message.text === 'string') {
       return null;
     }
     let stringifiedText = message.text
       .map((part) => {
-        if (part instanceof Object) {
-          return part.text;
-        } else {
-          return part;
-        }
+        return typeof part === 'string' ? part : part.text;
       })
       .join('');
     let textsBeforeDone = getTextsBeforeDones(stringifiedText);
 
     return textsBeforeDone.map((textBeforeDone) => ({
-      groupId: -1 * json.id,
+      groupId: -json.id,
       groupName: json.name,
       userId: Number(message.from_id.replace('user', '')),
       userName: message.from,
