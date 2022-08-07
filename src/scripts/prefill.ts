@@ -41,7 +41,7 @@ async function main() {
     }
 
     return textsBeforeDone.map((textBeforeDone) => ({
-      groupId: -json.id,
+      groupId: Number('-100' + String(json.id)),
       groupName: json.name,
       userId: Number(message.from_id.replace('user', '')),
       userName: message.from,
