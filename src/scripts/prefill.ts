@@ -24,12 +24,20 @@ async function main() {
     if (typeof message.text === 'string') {
       return null;
     }
+
     let stringifiedText = message.text
       .map((part) => {
         return typeof part === 'string' ? part : part.text;
       })
       .join('');
+    if (!stringifiedText.includes('#done')) {
+      return null;
+    }
+
     let textsBeforeDone = getTextsBeforeDones(stringifiedText);
+    if (textsBeforeDone.length === 0) {
+      return null;
+    }
 
     return textsBeforeDone.map((textBeforeDone) => ({
       groupId: -json.id,
