@@ -5,7 +5,7 @@ import { insertToSupabase } from '../../supabase';
 
 const isTrustedGroup = (chatId: number) => {
   const chatIds = {
-    feStudents: -1382428271,
+    feStudents: -1001382428271,
     dev: -1001655806824,
   };
 
