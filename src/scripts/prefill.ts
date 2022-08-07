@@ -35,8 +35,9 @@ async function main() {
     }
 
     let textsBeforeDone = getTextsBeforeDones(stringifiedText);
+
     if (textsBeforeDone.length === 0) {
-      return null;
+      textsBeforeDone = [stringifiedText];
     }
 
     return textsBeforeDone.map((textBeforeDone) => ({
