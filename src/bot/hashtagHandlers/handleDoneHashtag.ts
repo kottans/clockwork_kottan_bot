@@ -17,7 +17,11 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
     return;
   }
   const { from, chat, text, date } = ctx.update.message;
-  const textsBeforeDone = getTextsBeforeDones(text);
+  let textsBeforeDone = getTextsBeforeDones(text);
+
+  if (textsBeforeDone.length === 0) {
+    textsBeforeDone = [text];
+  }
 
   return textsBeforeDone.map((textBeforeDone) => ({
     groupId: chat.id,
