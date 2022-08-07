@@ -16,6 +16,7 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
   if (!('message' in ctx.update) || !('text' in ctx.update.message)) {
     return;
   }
+  console.log('2. Creating done records for: ', ctx.update.message.text);
   const { from, chat, text, date } = ctx.update.message;
   let textsBeforeDone = getTextsBeforeDones(text);
 
@@ -36,9 +37,11 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
 
 export const handleDoneHashtag = (bot: Telegraf) => {
   bot.hashtag('done', (ctx) => {
+    console.log('1. Recieved done hashtag with chat id: ', ctx.message.chat.id);
     if (isTrustedGroup(ctx.message.chat.id)) {
-      const doneRecord = createDoneRecords(ctx);
-      insertToSupabase(doneRecord);
+      const doneRecords = createDoneRecords(ctx);
+      console.log('3. Created records: ', doneRecords);
+      insertToSupabase(doneRecords);
     }
   });
 };
