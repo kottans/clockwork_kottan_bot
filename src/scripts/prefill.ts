@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { readFile } from 'fs/promises';
-import { trimDashSymbols } from '../helpers';
+import { getTextsBeforeDones } from '../helpers';
 import { insertToSupabase } from '../supabase';
 
 interface TgJsonExport {
@@ -24,31 +24,28 @@ async function main() {
     if (!(message.text instanceof Array)) {
       return null;
     }
-    let doneIndex = message.text?.findIndex?.((part) => {
-      if (!(part instanceof Object)) {
-        return false;
-      }
-      return part?.type === 'hashtag' && part.text === '#done';
-    });
-    if (!doneIndex || doneIndex < 1) {
-      return null;
-    }
-    let textBeforeDone = message.text[doneIndex - 1];
-    if (typeof textBeforeDone !== 'string') {
-      return null;
-    }
-    let cleanTextBeforeDone = trimDashSymbols(textBeforeDone);
-    return {
+    let stringifiedText = message.text
+      .map((part) => {
+        if (part instanceof Object) {
+          return part.text;
+        } else {
+          return part;
+        }
+      })
+      .join('');
+    let textsBeforeDone = getTextsBeforeDones(stringifiedText);
+
+    return textsBeforeDone.map((textBeforeDone) => ({
       groupId: -1 * json.id,
       groupName: json.name,
       userId: Number(message.from_id.replace('user', '')),
       userName: message.from,
-      textBeforeDone: cleanTextBeforeDone,
+      textBeforeDone,
       timestamp: new Date(Number(message.date_unixtime) * 1000),
       messageHash: `${message.from_id.replace('user', '')}+${
         message.date_unixtime
-      }`,
-    };
+      }+${textBeforeDone}`,
+    }));
   });
   const doneMessages = doneRawMessages.filter((m) => m !== null);
 
