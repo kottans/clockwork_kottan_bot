@@ -16,12 +16,15 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
   if (!('message' in ctx.update) || !('text' in ctx.update.message)) {
     return;
   }
-  console.log('2. Creating done records for: ', ctx.update.message.text);
-  const { from, chat, text, date } = ctx.update.message;
+  const { from, chat, text, date, entities } = ctx.update.message;
   let textsBeforeDone = getTextsBeforeDones(text);
-
   if (textsBeforeDone.length === 0) {
     textsBeforeDone = [text];
+  }
+  let urlEntity = entities.find((entity) => entity.type === 'url');
+  let url;
+  if (urlEntity) {
+    url = text.substring(urlEntity.offset, urlEntity.offset + urlEntity.length);
   }
 
   return textsBeforeDone.map((textBeforeDone) => ({
@@ -32,15 +35,14 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
     textBeforeDone,
     timestamp: new Date(date * 1000),
     messageHash: `${Math.abs(from.id)}+${date}+${textBeforeDone}`,
+    url,
   }));
 };
 
 export const handleDoneHashtag = (bot: Telegraf) => {
   bot.hashtag('done', (ctx) => {
-    console.log('1. Recieved done hashtag with chat id: ', ctx.message.chat.id);
-    if (isTrustedGroup(ctx.message.chat.id)) {
+    if (process.env.IS_DEVELOPMENT || isTrustedGroup(ctx.message.chat.id)) {
       const doneRecords = createDoneRecords(ctx);
-      console.log('3. Created records: ', doneRecords);
       insertToSupabase(doneRecords);
     }
   });
