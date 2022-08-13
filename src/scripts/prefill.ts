@@ -35,10 +35,14 @@ async function main() {
     }
 
     let textsBeforeDone = getTextsBeforeDones(stringifiedText);
-
     if (textsBeforeDone.length === 0) {
       textsBeforeDone = [stringifiedText];
     }
+
+    let urlObj = message.text.find(
+      (part) => typeof part === 'object' && part.type === 'link'
+    );
+    let url = typeof urlObj === 'object' ? urlObj.text : null;
 
     return textsBeforeDone.map((textBeforeDone) => ({
       groupId: Number('-100' + String(json.id)),
@@ -50,6 +54,7 @@ async function main() {
       messageHash: `${message.from_id.replace('user', '')}+${
         message.date_unixtime
       }+${textBeforeDone}`,
+      url,
     }));
   });
   const doneMessages = doneRawMessages.filter((m) => m !== null);
