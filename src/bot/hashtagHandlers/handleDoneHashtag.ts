@@ -12,11 +12,14 @@ const isTrustedGroup = (chatId: number) => {
   return Object.values(chatIds).includes(chatId);
 };
 
-const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
+const createDoneRecords = (
+  ctx: Context & { match: RegExpExecArray }
+): TaskDoneRecord[] => {
   if (!('message' in ctx.update) || !('text' in ctx.update.message)) {
     return;
   }
   const { from, chat, text, date, entities } = ctx.update.message;
+
   let textsBeforeDone = getTextsBeforeDones(text);
   if (textsBeforeDone.length === 0) {
     textsBeforeDone = [text];
@@ -26,6 +29,7 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
   if (urlEntity) {
     url = text.substring(urlEntity.offset, urlEntity.offset + urlEntity.length);
   }
+  let [hashtagType] = ctx.match;
 
   return textsBeforeDone.map((textBeforeDone) => ({
     groupId: chat.id,
@@ -36,11 +40,12 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
     timestamp: new Date(date * 1000),
     messageHash: `${Math.abs(from.id)}+${date}+${textBeforeDone}`,
     url,
+    isP2P: hashtagType === '#p2p_done',
   }));
 };
 
 export const handleDoneHashtag = (bot: Telegraf) => {
-  bot.hashtag('done', (ctx) => {
+  bot.hashtag(['done', 'p2p_done'], (ctx) => {
     if (process.env.IS_DEVELOPMENT || isTrustedGroup(ctx.message.chat.id)) {
       const doneRecords = createDoneRecords(ctx);
       insertToSupabase(doneRecords);
