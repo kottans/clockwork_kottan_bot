@@ -13,10 +13,17 @@ const isTrustedGroup = (chatId: number) => {
 };
 
 const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
-  if (!('message' in ctx.update) || !('text' in ctx.update.message)) {
+  if (
+    !('message' in ctx.update) ||
+    !('text' in ctx.update.message) ||
+    !('match' in ctx)
+  ) {
     return;
   }
   const { from, chat, text, date, entities } = ctx.update.message;
+
+  console.log(ctx.match);
+
   let textsBeforeDone = getTextsBeforeDones(text);
   if (textsBeforeDone.length === 0) {
     textsBeforeDone = [text];
@@ -40,7 +47,7 @@ const createDoneRecords = (ctx: Context): TaskDoneRecord[] => {
 };
 
 export const handleDoneHashtag = (bot: Telegraf) => {
-  bot.hashtag('done', (ctx) => {
+  bot.hashtag(['done', 'p2p_done'], (ctx) => {
     if (process.env.IS_DEVELOPMENT || isTrustedGroup(ctx.message.chat.id)) {
       const doneRecords = createDoneRecords(ctx);
       insertToSupabase(doneRecords);
